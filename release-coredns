@@ -1,0 +1,76 @@
+#!/bin/bash -e
+
+# This release script downloads the latest Go and CoreDNS, sets things up and
+# then calls into the Makefile to do the release. This script must be
+# pre-configured on the (Linux) machine doing the release.
+
+PROG=$(basename $0)
+
+# GetLatestGO downloads the latest version of Go (or used a cached download from /tmp).
+function latestGo {
+    TEMP="$1"
+
+    LATEST=$(curl -s https://golang.org/VERSION?m=text)
+    GOLANG=https://dl.google.com/go/${LATEST}.linux-amd64.tar.gz
+    TAR=$(basename $GOLANG)
+
+    ( cd $TEMP
+        if [[ ! -e /tmp/$TAR ]]; then
+            echo "$PROG: Downloading: $GOLANG"
+
+            wget -q $GOLANG
+            cp $TAR /tmp
+
+        else
+            echo "$PROG: Using cached version of: $GOLANG"
+
+            cp /tmp/$TAR .
+        fi
+    )
+}
+
+# setupGo extracts Go and exports GOROOT and GOPATH to get a compile confined to the tmp dir.
+function setupGo {
+    TEMP="$1"
+
+    echo "$PROG: Setting up Go in $TEMP"
+
+    ( cd $TEMP
+        tar xf $TAR
+        export GOROOT=$PWD/go
+        PATH=$GOROOT/bin:$PATH
+        export GOPATH=$PWD/g
+    )
+}
+
+# fromGithub download owner/repo from Github into g/src/github.com/owner/repo.
+function fromGithub {
+    TEMP="$1"
+    GITHUB="$2" # OWNER/REPO
+
+    echo "$PROG: Getting $GITHUB"
+
+    ( cd $TEMP
+        mkdir -p g/src/github.com/$GITHUB
+        cd g/src/github.com/$(dirname $GITHUB) && git clone --depth 1 https://github.com/$GITHUB
+    )
+}
+
+if [[ -z "$GITHUB_ACCESS_TOKEN" ]]; then
+    echo "$PROG: No GITHUB_ACCESS_TOKEN set"
+    exit 1
+fi
+# DOCKER password to login into docker.
+
+GITHUB=coredns/coredns
+TEMP=$(mktemp -d); function d1 { rm -rf $TEMP; }; trap d1 EXIT
+
+latestGo $TEMP
+setupGo $TEMP
+fromGithub $TEMP $GITHUB
+
+echo "$PROG: Building $GITHUB in $TEMP/g/src/github.com/$GITHUB"
+
+( cd $TEMP/g/src/github.com/$GITHUB
+    make DOCKER=miekg -f Makefile.release build tar
+)
