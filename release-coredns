@@ -72,5 +72,9 @@ fromGithub $TEMP $GITHUB
 echo "$PROG: Building $GITHUB in $TEMP/g/src/github.com/$GITHUB"
 
 ( cd $TEMP/g/src/github.com/$GITHUB
-    make DOCKER=miekg -f Makefile.release build tar
+    make DOCKER=miekg -f Makefile.release release
+    #make DOCKER=miekg -f Makefile.release github-push
+    #make DOCKER=miekg -f Makefile.release docker
+    #make DOCKER=miekg -f Makefile.release docker-push
+    make DOCKER=miekg -f Makefile.release authors
 )
