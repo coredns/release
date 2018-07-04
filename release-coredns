@@ -4,8 +4,11 @@
 # then calls into the Makefile to do the release. This script must be
 # pre-configured on the (Linux) machine doing the release.
 #
-# If the optional argument is 'test', we run a trial run, where we download the code and
-# do a test compile
+# Synopsis
+# release-coredns [-t] [BRANCH]
+#
+# -t: test run, only compile, don't upload anything
+# BRANCH is optional branch to use for the release; defaults to 'master'.
 
 PROG=$(basename $0)
 
