@@ -6,7 +6,7 @@
 
 PROG=$(basename $0)
 
-# GetLatestGO downloads the latest version of Go (or used a cached download from /tmp).
+# latestGO downloads the latest version of Go (or used a cached download from /tmp).
 function latestGo {
     TEMP="$1"
 
@@ -43,7 +43,7 @@ function setupGo {
     )
 }
 
-# fromGithub download owner/repo from Github into g/src/github.com/owner/repo.
+# fromGithub downloads owner/repo from Github into g/src/github.com/owner/repo.
 function fromGithub {
     TEMP="$1"
     GITHUB="$2" # OWNER/REPO
@@ -60,7 +60,14 @@ if [[ -z "$GITHUB_ACCESS_TOKEN" ]]; then
     echo "$PROG: No GITHUB_ACCESS_TOKEN set"
     exit 1
 fi
-# DOCKER password to login into docker.
+if [[ -z "$DOCKER_LOGIN" ]]; then
+    echo "$PROG: No DOCKER_LOGIN set"
+    exit 1
+fi
+if [[ -z "$DOCKER_PASSWORD" ]]; then
+    echo "$PROG: No DOCKER_PASSWORD set"
+    exit 1
+fi
 
 GITHUB=coredns/coredns
 TEMP=$(mktemp -d); function d1 { rm -rf $TEMP; }; trap d1 EXIT
