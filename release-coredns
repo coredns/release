@@ -83,7 +83,6 @@ if [[ -n "$TESTING" ]]; then
 
     ( cd $TEMP/g/src/github.com/$GITHUB
         make DOCKER=miekg -f Makefile.release release
-        make DOCKER=miekg -f Makefile.release authors
     )
 
     echo "$PROG: Please remove $TEMP at your leisure"
