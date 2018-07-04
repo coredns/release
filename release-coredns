@@ -86,6 +86,8 @@ if [[ -n "$TESTING" ]]; then
         make DOCKER=miekg -f Makefile.release authors
     )
 
+    echo "$PROG: Please remove $TEMP at your leisure"
+
     exit 0
 fi
 
@@ -115,5 +117,4 @@ echo "$PROG: Building $GITHUB (branch $BRANCH) in $TEMP/g/src/github.com/$GITHUB
     #make DOCKER=miekg -f Makefile.release github-push
     #make DOCKER=miekg -f Makefile.release docker
     #make DOCKER=miekg -f Makefile.release docker-push
-    make DOCKER=miekg -f Makefile.release authors
 )

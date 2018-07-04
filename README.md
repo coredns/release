@@ -51,4 +51,5 @@ The last lines of `release-coredns` show the make target we call to release.
 
 ## Testing
 
-The script can be tested with `./release-coredns test`.
+The script can be tested with `./release-coredns -t`. It also has an optional argument that signals
+the branch name that should be build.
