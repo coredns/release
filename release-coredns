@@ -3,15 +3,31 @@
 # This release script downloads the latest Go and CoreDNS, sets things up and
 # then calls into the Makefile to do the release. This script must be
 # pre-configured on the (Linux) machine doing the release.
+#
+# If the optional argument is 'test', we run a trial run, where we download the code and
+# do a test compile
 
 PROG=$(basename $0)
 
+GITHUB=coredns/coredns
+BRANCH=master
+TESTING=
+
+if [[ $1 -eq "-t" ]]; then
+    TESTING=ON
+    shift
+fi
+if [[ -n "$1" ]]; then
+    BRANCH="$1"
+fi
+
 # latestGO downloads the latest version of Go (or used a cached download from /tmp).
 function latestGo {
-    TEMP="$1"
+    local TEMP="$1"
 
-    LATEST=$(curl -s https://golang.org/VERSION?m=text)
-    GOLANG=https://dl.google.com/go/${LATEST}.linux-amd64.tar.gz
+    local LATEST=$(curl -s https://golang.org/VERSION?m=text)
+    local GOLANG=https://dl.google.com/go/${LATEST}.linux-amd64.tar.gz
+
     TAR=$(basename $GOLANG)
 
     ( cd $TEMP
@@ -31,30 +47,47 @@ function latestGo {
 
 # setupGo extracts Go and exports GOROOT and GOPATH to get a compile confined to the tmp dir.
 function setupGo {
-    TEMP="$1"
+    local TEMP="$1"
 
     echo "$PROG: Setting up Go in $TEMP"
 
-    ( cd $TEMP
-        tar xf $TAR
-        export GOROOT=$PWD/go
-        PATH=$GOROOT/bin:$PATH
-        export GOPATH=$PWD/g
-    )
+    ( cd $TEMP; tar xf $TAR )
+    export GOROOT=$TEMP/go
+    PATH=$GOROOT/bin:$PATH
+    export GOPATH=$TEMP/g
 }
 
 # fromGithub downloads owner/repo from Github into g/src/github.com/owner/repo.
 function fromGithub {
-    TEMP="$1"
-    GITHUB="$2" # OWNER/REPO
+    local TEMP="$1"
+    local GITHUB="$2" # OWNER/REPO
+    local BRANCH="$3"
 
-    echo "$PROG: Getting $GITHUB"
+    echo "$PROG: Getting $GITHUB (branch $BRANCH)"
 
     ( cd $TEMP
         mkdir -p g/src/github.com/$GITHUB
-        cd g/src/github.com/$(dirname $GITHUB) && git clone --depth 1 https://github.com/$GITHUB
+        cd g/src/github.com/$(dirname $GITHUB) && git clone --depth 1 https://github.com/$GITHUB && cd $(basename $GITHUB) && \
+            git checkout -B $BRANCH && git pull origin $BRANCH
     )
 }
+
+if [[ -n "$TESTING" ]]; then
+    TEMP=$(mktemp -d)
+
+    latestGo $TEMP
+    setupGo $TEMP
+    fromGithub $TEMP $GITHUB $BRANCH
+
+    echo "$PROG: Test building $GITHUB (branch $BRANCH) in $TEMP/g/src/github.com/$GITHUB"
+
+    ( cd $TEMP/g/src/github.com/$GITHUB
+        make DOCKER=miekg -f Makefile.release release
+        make DOCKER=miekg -f Makefile.release authors
+    )
+
+    exit 0
+fi
 
 if [[ -z "$GITHUB_ACCESS_TOKEN" ]]; then
     echo "$PROG: No GITHUB_ACCESS_TOKEN set"
@@ -69,14 +102,13 @@ if [[ -z "$DOCKER_PASSWORD" ]]; then
     exit 1
 fi
 
-GITHUB=coredns/coredns
 TEMP=$(mktemp -d); function d1 { rm -rf $TEMP; }; trap d1 EXIT
 
 latestGo $TEMP
 setupGo $TEMP
-fromGithub $TEMP $GITHUB
+fromGithub $TEMP $GITHUB $BRANCH
 
-echo "$PROG: Building $GITHUB in $TEMP/g/src/github.com/$GITHUB"
+echo "$PROG: Building $GITHUB (branch $BRANCH) in $TEMP/g/src/github.com/$GITHUB"
 
 ( cd $TEMP/g/src/github.com/$GITHUB
     make DOCKER=miekg -f Makefile.release release

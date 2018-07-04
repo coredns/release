@@ -48,3 +48,7 @@ Finalize the release notes and publicize the new release.
 
 This will trigger this release script that should automatically create all the release artifacts.
 The last lines of `release-coredns` show the make target we call to release.
+
+## Testing
+
+The script can be tested with `./release-coredns test`.
