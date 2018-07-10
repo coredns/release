@@ -9,6 +9,7 @@
 
 PROG=$(basename $0)
 
+DOCKER=${DOCKER:-miek}
 GITHUB=coredns/coredns
 BRANCH=master
 TESTING=
@@ -82,7 +83,7 @@ if [[ -n "$TESTING" ]]; then
     echo "$PROG: Test building $GITHUB (branch $BRANCH) in $TEMP/g/src/github.com/$GITHUB"
 
     ( cd $TEMP/g/src/github.com/$GITHUB
-        make DOCKER=miekg -f Makefile.release release
+        make DOCKER=$DOCKER -f Makefile.release release
     )
 
     echo "$PROG: Please remove $TEMP at your leisure"
@@ -112,8 +113,8 @@ fromGithub $TEMP $GITHUB $BRANCH
 echo "$PROG: Building $GITHUB (branch $BRANCH) in $TEMP/g/src/github.com/$GITHUB"
 
 ( cd $TEMP/g/src/github.com/$GITHUB
-    make DOCKER=miekg -f Makefile.release release
-    #make DOCKER=miekg -f Makefile.release github-push
-    #make DOCKER=miekg -f Makefile.release docker
-    #make DOCKER=miekg -f Makefile.release docker-push
+    make DOCKER=$DOCKER -f Makefile.release release
+    #make DOCKER=$DOCKER -f Makefile.release github-push
+    make DOCKER=$DOCKER -f Makefile.release docker
+    #make DOCKER=$DOCKER -f Makefile.release docker-push
 )
