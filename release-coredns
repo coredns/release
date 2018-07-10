@@ -4,8 +4,11 @@
 # then calls into the Makefile to do the release. This script must be
 # pre-configured on the (Linux) machine doing the release.
 #
-# If the optional argument is 'test', we run a trial run, where we download the code and
-# do a test compile
+# Synopsis
+# release-coredns [-t] [BRANCH]
+#
+# -t: test run, only compile, don't upload anything
+# BRANCH is optional branch to use for the release; defaults to 'master'.
 
 PROG=$(basename $0)
 
@@ -67,9 +70,8 @@ function fromGithub {
     echo "$PROG: Getting $GITHUB (branch $BRANCH)"
 
     ( cd $TEMP
-        mkdir -p g/src/github.com/$GITHUB
-        cd g/src/github.com/$(dirname $GITHUB) && git clone --depth 1 https://github.com/$GITHUB && cd $(basename $GITHUB) && \
-            git checkout -B $BRANCH && git pull origin $BRANCH
+        mkdir -p g/src/github.com/$(dirname $GITHUB) && \
+        cd g/src/github.com/$(dirname $GITHUB) && git clone -b $BRANCH --single-branch --depth 1 https://github.com/$GITHUB
     )
 }
 
@@ -84,6 +86,7 @@ if [[ -n "$TESTING" ]]; then
 
     ( cd $TEMP/g/src/github.com/$GITHUB
         make DOCKER=$DOCKER -f Makefile.release release
+        make DOCKER=$DOCKER -f Makefile.release docker
     )
 
     echo "$PROG: Please remove $TEMP at your leisure"
