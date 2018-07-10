@@ -75,7 +75,7 @@ function fromGithub {
     )
 }
 
-if [[ -n "$TESTING" ]]; then
+if [[ "$TESTING" == "ON" ]]; then
     TEMP=$(mktemp -d)
 
     latestGo $TEMP
