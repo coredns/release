@@ -117,7 +117,7 @@ echo "$PROG: Building $GITHUB (branch $BRANCH) in $TEMP/g/src/github.com/$GITHUB
 
 ( cd $TEMP/g/src/github.com/$GITHUB
     make DOCKER=$DOCKER -f Makefile.release release
-    #make DOCKER=$DOCKER -f Makefile.release github-push
+    make DOCKER=$DOCKER -f Makefile.release github-push
     make DOCKER=$DOCKER -f Makefile.release docker
-    #make DOCKER=$DOCKER -f Makefile.release docker-push
+    make DOCKER=$DOCKER -f Makefile.release docker-push
 )
