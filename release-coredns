@@ -17,7 +17,7 @@ GITHUB=coredns/coredns
 BRANCH=master
 TESTING=
 
-if [[ $1 -eq "-t" ]]; then
+if [[ "$1" == "-t" ]]; then
     TESTING=ON
     shift
 fi
