@@ -89,7 +89,7 @@ if [[ "$TESTING" == "ON" ]]; then
         make DOCKER=$DOCKER -f Makefile.release docker
     )
 
-    echo "$PROG: Please remove $TEMP at your leisure"
+    echo "$PROG: This was a test run. Please remove $TEMP at your leisure."
 
     exit 0
 fi
