@@ -57,8 +57,9 @@ function setupGo {
 
     ( cd $TEMP; tar xf $TAR )
     export GOROOT=$TEMP/go
-    PATH=$GOROOT/bin:$PATH
     export GOPATH=$TEMP/g
+    export GOBIN=${GOPATH}/bin
+    export PATH=$GOBIN:$PATH
 }
 
 # fromGithub downloads owner/repo from Github into g/src/github.com/owner/repo.
@@ -114,6 +115,7 @@ setupGo $TEMP
 fromGithub $TEMP $GITHUB $BRANCH
 
 echo "$PROG: Building $GITHUB (branch $BRANCH) in $TEMP/g/src/github.com/$GITHUB"
+echo "$PROG: PATH is $PATH"
 
 ( cd $TEMP/g/src/github.com/$GITHUB
     make DOCKER=$DOCKER -f Makefile.release release
