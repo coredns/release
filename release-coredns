@@ -60,6 +60,7 @@ function setupGo {
     export GOPATH=$TEMP/g
     export GOBIN=${GOPATH}/bin
     export PATH=$GOBIN:$PATH
+    export PATH=$GOROOT/bin:$PATH
 }
 
 # fromGithub downloads owner/repo from Github into g/src/github.com/owner/repo.
