@@ -21,9 +21,14 @@ if [[ "$1" == "-t" ]]; then
     TESTING=ON
     shift
 fi
-if [[ -n "$1" ]]; then
-    BRANCH="$1"
+if [[ -z "$1" ]]; then
+    echo "$PROG: Need branch as first argument"
 fi
+BRANCH="$1"
+if [[ -z "$2" ]]; then
+    echo "$PROG: Need version as second argument"
+fi
+WANTVERSION="$2"
 
 # latestGO downloads the latest version of Go (or used a cached download from /tmp).
 function latestGo {
@@ -77,14 +82,29 @@ function fromGithub {
     )
 }
 
+function versionCheck() {
+    local WANTVERSION=$1
+    local GITHUB=$2
+    (cd $GITHUB;
+        COREVERSION=$(make DOCKER=$DOCKER -f Makefile.release version)
+        if [[ "$COREVERSION" != "$WANTVERSION" ]]; then
+            echo "$PROG: Want version $WANTVERSION, got version $COREVERSION, aborting build"
+            exit 1
+        fi
+        echo "$PROG: Version OK: $WANTVERSION = $COREVERSION"
+    )
+}
+
 if [[ "$TESTING" == "ON" ]]; then
     TEMP=$(mktemp -d)
 
     latestGo $TEMP
     setupGo $TEMP
     fromGithub $TEMP $GITHUB $BRANCH
+    versionCheck $WANTVERSION $TEMP/g/src/github.com/$GITHUB
 
     echo "$PROG: Test building $GITHUB (branch $BRANCH) in $TEMP/g/src/github.com/$GITHUB"
+    echo "$PROG: PATH is $PATH"
 
     ( cd $TEMP/g/src/github.com/$GITHUB
         make DOCKER=$DOCKER -f Makefile.release release
@@ -114,6 +134,7 @@ TEMP=$(mktemp -d); function d1 { rm -rf $TEMP; }; trap d1 EXIT
 latestGo $TEMP
 setupGo $TEMP
 fromGithub $TEMP $GITHUB $BRANCH
+versionCheck $WANTVERSION $TEMP/g/src/github.com/$GITHUB
 
 echo "$PROG: Building $GITHUB (branch $BRANCH) in $TEMP/g/src/github.com/$GITHUB"
 echo "$PROG: PATH is $PATH"
