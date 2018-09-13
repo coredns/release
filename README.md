@@ -13,7 +13,7 @@ for dreck, you'll need to set the following environment variables:
 This script will download the latest Go, setup a compile environment, and call into
 `Makefile.release` to compile CoreDNS and upload it to github (hence `GITHUB_ACCESS_TOKEN`), and
 upload it to the docker hub (hence `DOCKER_`). Note the webserver needs to be able to build docker
-images, this requires the user it runs at be to in the docker group(s).
+images, this requires the user it runs at to be in the docker group(s).
 
 The `OWNERS` file of CoreDNS must allow this script to be called, so it will need a section like:
 
