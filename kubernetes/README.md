@@ -23,7 +23,7 @@ Example issue opened for previous releases: https://github.com/kubernetes/kubern
 
 
 
-Checklist (must be completed in order)
+## Checklist (must be completed in order)
 
 - [ ] Open a coredns/deployment PR
 - [ ] coredns/deployment passes CI tests
