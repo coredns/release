@@ -25,8 +25,8 @@ for both [kube-up](https://github.com/kubernetes/kubernetes/tree/master/cluster/
     * If the tests are passing, get the PR merged.
 
 
-6. Validate the [5k node test](https://k8s-testgrid.appspot.com/sig-scalability-gce#gce-scale-performance) to see if the Load and Density scale tests are green. 
-    * The 5k node test tests only runs once per day. Hence ensure that tests run include the merged PR. 
+6. Validate the [5k node scale test](https://k8s-testgrid.appspot.com/sig-scalability-gce#gce-scale-performance) to see if the Load and Density scale tests are green. 
+    * The 5k node scale test only runs once per day. Hence ensure that the validated test run includes the merged PR. 
     * If the tests are green, proceed to open a PR in the [Minikube](https://github.com/kubernetes/minikube) and [Kops](https://github.com/kubernetes/kops) repository to update the CoreDNS image and manifest.
 
 
