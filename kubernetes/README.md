@@ -20,7 +20,7 @@ But do not merge yet.
 
 5. Once the gcr.io image has been pushed, open a PR in the [Kubernetes main repository](https://github.com/kubernetes/kubernetes) to update the CoreDNS image.
 for both [kube-up](https://github.com/kubernetes/kubernetes/tree/master/cluster/addons/dns/coredns) and [kubeadm](https://github.com/kubernetes/kubernetes/blob/master/cmd/kubeadm/app/constants/constants.go#L335) install tools.
-    * Make sure to write proper release notes mentioning the new version, features, deprecation as applicable from the previous release.
+    * Make sure to write proper release notes mentioning the new version, features, deprecation as applicable since the previous Kubernetes release.
     * Ensure that all the pre-submit e2e tests are passing. 
     * If the tests are passing, get the PR merged.
     
