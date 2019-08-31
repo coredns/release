@@ -130,7 +130,7 @@ if [[ -z "$DOCKER_PASSWORD" ]]; then
     exit 1
 fi
 
-TEMP=$(mktemp -d); function d1 { chown -R +wx $TEMP; rm -rf $TEMP; }; trap d1 EXIT
+TEMP=$(mktemp -d); function d1 { chmod -R +wx $TEMP; rm -rf $TEMP; }; trap d1 EXIT
 
 latestGo $TEMP
 setupGo $TEMP
