@@ -5,10 +5,9 @@
 # pre-configured on the (Linux) machine doing the release.
 #
 # Synopsis
-# release-coredns [-t] [BRANCH]
+# release-coredns [-t] BRANCH VERSION
 #
 # -t: test run, only compile, don't upload anything
-# BRANCH is optional branch to use for the release; defaults to 'master'.
 
 PROG=$(basename $0)
 
@@ -23,10 +22,12 @@ if [[ "$1" == "-t" ]]; then
 fi
 if [[ -z "$1" ]]; then
     echo "$PROG: Need branch as first argument"
+    exit 1
 fi
 BRANCH="$1"
 if [[ -z "$2" ]]; then
     echo "$PROG: Need version as second argument"
+    exit 1
 fi
 WANTVERSION="$2"
 
