@@ -15,11 +15,24 @@ DOCKER=${DOCKER:-miek}
 GITHUB=coredns/coredns
 BRANCH=master
 TESTING=
+GOVERSION=
 
-if [[ "$1" == "-t" ]]; then
-    TESTING=ON
-    shift
-fi
+while getopts "tv:" o; do
+    case "${o}" in
+        t)
+            TESTING=ON
+            ;;
+        v)
+            GOVERSION="${OPTARG}"
+            ;;
+        *)
+            echo "$PROG: Wrong flag: ${o}"
+            exit 1
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
 if [[ -z "$1" ]]; then
     echo "$PROG: Need branch as first argument"
     exit 1
@@ -32,11 +45,18 @@ fi
 WANTVERSION="$2"
 
 # latestGO downloads the latest version of Go (or used a cached download from /tmp).
+# The optional second parameter may specify a specific Go release to use for this release.
 function latestGo {
     local TEMP="$1"
+    local VERSION="$2"
 
-    local LATEST=$(curl -s https://golang.org/VERSION?m=text)
-    local GOLANG=https://dl.google.com/go/${LATEST}.linux-amd64.tar.gz
+    if [[ -z "$VERSION" ]]; then
+        local LATEST=$(curl -s https://golang.org/VERSION?m=text)
+        local GOLANG=https://dl.google.com/go/${LATEST}.linux-amd64.tar.gz
+    else
+        local LATEST="${VERSION}"
+        local GOLANG=https://dl.google.com/go/${LATEST}.linux-amd64.tar.gz
+    fi
 
     TAR=$(basename $GOLANG)
 
@@ -99,7 +119,7 @@ function versionCheck() {
 if [[ "$TESTING" == "ON" ]]; then
     TEMP=$(mktemp -d)
 
-    latestGo $TEMP
+    latestGo $TEMP $GOVERSION
     setupGo $TEMP
     fromGithub $TEMP $GITHUB $BRANCH
     versionCheck $WANTVERSION $TEMP/g/src/github.com/$GITHUB
@@ -132,7 +152,7 @@ fi
 
 TEMP=$(mktemp -d); function d1 { chmod -R +wx $TEMP; rm -rf $TEMP; }; trap d1 EXIT
 
-latestGo $TEMP
+latestGo $TEMP $GOVERSION
 setupGo $TEMP
 fromGithub $TEMP $GITHUB $BRANCH
 versionCheck $WANTVERSION $TEMP/g/src/github.com/$GITHUB
