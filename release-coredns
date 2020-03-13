@@ -5,9 +5,10 @@
 # pre-configured on the (Linux) machine doing the release.
 #
 # Synopsis
-# release-coredns [-t] BRANCH VERSION
+# release-coredns [-t] [-v GOVERSION] BRANCH VERSION
 #
 # -t: test run, only compile, don't upload anything
+# -v VERSION: use this Go version to compile CoreDNS, i.e. -v 1.13.8
 
 PROG=$(basename $0)
 
@@ -15,11 +16,24 @@ DOCKER=${DOCKER:-miek}
 GITHUB=coredns/coredns
 BRANCH=master
 TESTING=
+GOVERSION=
 
-if [[ "$1" == "-t" ]]; then
-    TESTING=ON
-    shift
-fi
+while getopts "tv:" o; do
+    case "${o}" in
+        t)
+            TESTING=ON
+            ;;
+        v)
+            GOVERSION="${OPTARG}"
+            ;;
+        *)
+            echo "$PROG: Wrong flag: ${o}"
+            exit 1
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
 if [[ -z "$1" ]]; then
     echo "$PROG: Need branch as first argument"
     exit 1
@@ -31,12 +45,23 @@ if [[ -z "$2" ]]; then
 fi
 WANTVERSION="$2"
 
+if [[ "$TESTING" == "ON" ]]; then
+    echo "$PROG: TEST ---***--- TEST ---***--- TEST"
+fi
+
 # latestGO downloads the latest version of Go (or used a cached download from /tmp).
+# The optional second parameter may specify a specific Go release to use for this release.
 function latestGo {
     local TEMP="$1"
+    local VERSION="$2"
 
-    local LATEST=$(curl -s https://golang.org/VERSION?m=text)
-    local GOLANG=https://dl.google.com/go/${LATEST}.linux-amd64.tar.gz
+    if [[ -z "$VERSION" ]]; then
+        local LATEST=$(curl -s https://golang.org/VERSION?m=text)
+        local GOLANG=https://dl.google.com/go/${LATEST}.linux-amd64.tar.gz
+    else
+        local LATEST="go${VERSION}" # add 'go' prefix
+        local GOLANG=https://dl.google.com/go/${LATEST}.linux-amd64.tar.gz
+    fi
 
     TAR=$(basename $GOLANG)
 
@@ -99,7 +124,7 @@ function versionCheck() {
 if [[ "$TESTING" == "ON" ]]; then
     TEMP=$(mktemp -d)
 
-    latestGo $TEMP
+    latestGo $TEMP $GOVERSION
     setupGo $TEMP
     fromGithub $TEMP $GITHUB $BRANCH
     versionCheck $WANTVERSION $TEMP/g/src/github.com/$GITHUB
@@ -109,11 +134,10 @@ if [[ "$TESTING" == "ON" ]]; then
 
     ( cd $TEMP/g/src/github.com/$GITHUB
         make DOCKER=$DOCKER -f Makefile.release release
-        make DOCKER=$DOCKER -f Makefile.release docker
     )
 
     echo "$PROG: This was a test run. Please remove $TEMP at your leisure."
-
+    echo "$PROG: TEST ---***--- TEST ---***--- TEST"
     exit 0
 fi
 
@@ -132,7 +156,7 @@ fi
 
 TEMP=$(mktemp -d); function d1 { chmod -R +wx $TEMP; rm -rf $TEMP; }; trap d1 EXIT
 
-latestGo $TEMP
+latestGo $TEMP $GOVERSION
 setupGo $TEMP
 fromGithub $TEMP $GITHUB $BRANCH
 versionCheck $WANTVERSION $TEMP/g/src/github.com/$GITHUB
