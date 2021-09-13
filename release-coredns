@@ -12,7 +12,6 @@
 
 PROG=$(basename $0)
 
-DOCKER=${DOCKER:-miek}
 GITHUB=coredns/coredns
 BRANCH=master
 TESTING=
@@ -112,7 +111,7 @@ function versionCheck() {
     local WANTVERSION=$1
     local GITHUB=$2
     (cd $GITHUB;
-        COREVERSION=$(make DOCKER=$DOCKER -f Makefile.release version)
+        COREVERSION=$(make -f Makefile.release version)
         if [[ "$COREVERSION" != "$WANTVERSION" ]]; then
             echo "$PROG: Want version $WANTVERSION, got version $COREVERSION, aborting build"
             exit 1
@@ -133,7 +132,7 @@ if [[ "$TESTING" == "ON" ]]; then
     echo "$PROG: PATH is $PATH"
 
     ( cd $TEMP/g/src/github.com/$GITHUB
-        make DOCKER=$DOCKER -f Makefile.release release
+        make -f Makefile.release release
     )
 
     echo "$PROG: This was a test run. Please remove $TEMP at your leisure."
@@ -143,14 +142,6 @@ fi
 
 if [[ -z "$GITHUB_ACCESS_TOKEN" ]]; then
     echo "$PROG: No GITHUB_ACCESS_TOKEN set"
-    exit 1
-fi
-if [[ -z "$DOCKER_LOGIN" ]]; then
-    echo "$PROG: No DOCKER_LOGIN set"
-    exit 1
-fi
-if [[ -z "$DOCKER_PASSWORD" ]]; then
-    echo "$PROG: No DOCKER_PASSWORD set"
     exit 1
 fi
 
@@ -165,8 +156,6 @@ echo "$PROG: Building $GITHUB (branch $BRANCH) in $TEMP/g/src/github.com/$GITHUB
 echo "$PROG: PATH is $PATH"
 
 ( cd $TEMP/g/src/github.com/$GITHUB
-    make DOCKER=$DOCKER -f Makefile.release release
-    make DOCKER=$DOCKER -f Makefile.release docker
-    make DOCKER=$DOCKER -f Makefile.release github-push
-    make DOCKER=$DOCKER -f Makefile.release docker-push
+    make -f Makefile.release release
+    make -f Makefile.release github-push
 )
