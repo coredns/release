@@ -1,0 +1,87 @@
+#!/bin/bash -e
+
+# This script downloads the latest CoreDNS from github and creates a docker image
+# and uploads it to the docker hub.
+#
+# Synopsis
+# release-coredns [-t] VERSION
+#
+# -t: test run, only compile, don't upload anything
+
+PROG=$(basename $0)
+
+GITHUB=coredns/coredns
+BRANCH=master
+TESTING=
+
+while getopts "t" o; do
+    case "${o}" in
+        t)
+            TESTING=ON
+            ;;
+        *)
+            echo "$PROG: Wrong flag: ${o}"
+            exit 1
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
+if [[ -z "$1" ]]; then
+    echo "$PROG: Need version as first argument"
+    exit 1
+fi
+WANTVERSION="$1"
+export VERSION=${WANTVERSION}
+
+if [[ "$TESTING" == "ON" ]]; then
+    echo "$PROG: TEST ---***--- TEST ---***--- TEST"
+fi
+
+# fromGithub downloads owner/repo from Github into g/src/github.com/owner/repo.
+function fromGithub {
+    local TEMP="$1"
+    local GITHUB="$2" # OWNER/REPO
+    local BRANCH="$3"
+
+    echo "$PROG: Getting $GITHUB (branch $BRANCH)"
+
+    ( cd $TEMP
+        mkdir -p g/src/github.com/$(dirname $GITHUB) && \
+        cd g/src/github.com/$(dirname $GITHUB) && git clone -b $BRANCH --single-branch --depth 1 https://github.com/$GITHUB
+    )
+}
+
+if [[ "$TESTING" == "ON" ]]; then
+    TEMP=$(mktemp -d)
+
+    fromGithub $TEMP $GITHUB $BRANCH
+
+    echo "$PROG: Test building $GITHUB (branch $BRANCH) in $TEMP/g/src/github.com/$GITHUB"
+    echo "$PROG: PATH is $PATH"
+
+    ( cd $TEMP/g/src/github.com/$GITHUB
+        make -f Makefile.docker release
+    )
+
+    echo "$PROG: This was a test run. Please remove $TEMP at your leisure."
+    echo "$PROG: TEST ---***--- TEST ---***--- TEST"
+    exit 0
+fi
+
+if [[ -z "$GITHUB_ACCESS_TOKEN" ]]; then
+    echo "$PROG: No GITHUB_ACCESS_TOKEN set"
+    exit 1
+fi
+
+TEMP=$(mktemp -d); function d1 { chmod -R +wx $TEMP; rm -rf $TEMP; }; trap d1 EXIT
+
+fromGithub $TEMP $GITHUB $BRANCH
+
+echo "$PROG: Building $GITHUB (branch $BRANCH) in $TEMP/g/src/github.com/$GITHUB"
+echo "$PROG: PATH is $PATH"
+
+( cd $TEMP/g/src/github.com/$GITHUB
+    make -f Makefile.docker release
+    make -f Makefile.docker docker-push
+)
