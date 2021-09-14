@@ -57,11 +57,11 @@ if [[ "$TESTING" == "ON" ]]; then
 
     fromGithub $TEMP $GITHUB $BRANCH
 
-    echo "$PROG: Test building $GITHUB (branch $BRANCH) in $TEMP/g/src/github.com/$GITHUB"
+    echo "$PROG: Test docker building $GITHUB (branch $BRANCH) in $TEMP/g/src/github.com/$GITHUB"
     echo "$PROG: PATH is $PATH"
 
     ( cd $TEMP/g/src/github.com/$GITHUB
-        make -f Makefile.docker release
+        make VERSION=${VERSION} -f Makefile.docker release
     )
 
     echo "$PROG: This was a test run. Please remove $TEMP at your leisure."
@@ -82,6 +82,6 @@ echo "$PROG: Building $GITHUB (branch $BRANCH) in $TEMP/g/src/github.com/$GITHUB
 echo "$PROG: PATH is $PATH"
 
 ( cd $TEMP/g/src/github.com/$GITHUB
-    make -f Makefile.docker release
-    make -f Makefile.docker docker-push
+    make VERSION=${VERSION} -f Makefile.docker release
+    make VERSION=${VERSION} -f Makefile.docker docker-push
 )
