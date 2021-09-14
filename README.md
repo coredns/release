@@ -1,7 +1,8 @@
-# CoreDNS release script
+# CoreDNS release scripts
 
 This script `release-coredns` works in conjunctions `Makefile.release` in the CoreDNS repo and
 [dreck](github.com/miekg/dreck).
+The script `docker-coredns` works with `Makefile.docker` in the coredns repo.
 
 A server needs to be configured with *dreck* and access to this script. In the configuration section
 for dreck, you'll need to set the following environment variables:
@@ -29,6 +30,8 @@ The version to release is determined from `coremain/version.go` and should alrea
 
 The full commandline synopsis is: `release-coredns [-t] [-v GOVERSION] BRANCH VERSION`. And for the
 docker one: `docker-coredns [-t] VERSION`.
+
+`-t` is used for testing.
 
 ## Releasing CoreDNS
 
