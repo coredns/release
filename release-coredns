@@ -55,7 +55,7 @@ function latestGo {
     local VERSION="$2"
 
     if [[ -z "$VERSION" ]]; then
-        local LATEST=$(curl -s 'https://go.dev/dl/?mode=json' | jq -r '.[0].version')
+        local LATEST=$(curl -sL 'https://go.dev/dl/?mode=json' | jq -r '.[0].version')
         local GOLANG=https://go.dev/dl/${LATEST}.linux-amd64.tar.gz
     else
         local LATEST="go${VERSION}" # add 'go' prefix
