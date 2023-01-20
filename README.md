@@ -1,7 +1,7 @@
 # CoreDNS release scripts
 
 This script `release-coredns` works in conjunctions `Makefile.release` in the CoreDNS repo and
-[dreck](github.com/miekg/dreck).
+[dreck](https://github.com/miekg/dreck).
 The script `docker-coredns` works with `Makefile.docker` in the coredns repo.
 
 A server needs to be configured with *dreck* and access to this script. In the configuration section
